@@ -55,7 +55,7 @@ class TransportSessionTest: XCTestCase {
         // return the promise with an array of objects
         session.basicRequestPromise().then {
             (json: JSON) -> Void in
-            XCTAssertEqual(json.string!, "Hello")
+            XCTAssertEqual(json["message"].string!, "Hello")
             self.expectation.fulfill()
         }
         waitForExpectationsWithTimeout(5.0, handler: nil)
