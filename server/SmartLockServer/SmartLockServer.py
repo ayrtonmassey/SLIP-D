@@ -131,6 +131,34 @@ class LockList(Resource):
         return lock_json
 
 
+class LockCheck(Resource):
+    """
+    This endpoint checks if the lock in the database is to be opened or closed
+    """
+    decorators = [requires_auth]
+
+    def get(self, lock_id):
+        lock_state = False
+        if lock_id is not None:
+            email = request.authorization.username
+            database_lock_id = models.Lock.query.filter_by(id=lock_id).first()
+
+            if database_lock_id is not None:
+                if email == database_lock_id.owner:
+                    lock_state = database_lock_id.locked
+
+                    if lock_state is False:
+                        return lock_state, 200
+                    else:
+                        return lock_state, 423
+                else:
+                    return lock_state, 403
+
+        return lock_state, 404
+
+
+
+
 def is_user_in_db(user):
     email = models.User.query.filter_by(email=user)
     if email.count() > 0:
@@ -156,6 +184,7 @@ def change_lock_state(lock_id, new_state):
     return lock_id, 404
 
 
+
 # testing endpoints
 api.add_resource(HelloWorld, '/')
 api.add_resource(ProtectedResource, '/protected-resource')
@@ -166,6 +195,7 @@ api.add_resource(RegisterUser, '/register-user')
 api.add_resource(RegisterLock, '/register-lock/', '/register-lock/<int:lock_id>')
 api.add_resource(OpenLock, '/open', '/open/<int:lock_id>')
 api.add_resource(CloseLock, '/close', '/close/<int:lock_id>')
+api.add_resource(LockCheck, '/check', '/check/<int:lock_id>')
 
 if __name__ == '__main__':
     app.run(debug=True)
