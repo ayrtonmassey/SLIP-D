@@ -11,10 +11,74 @@
         </div>
         <div class="panel-body">
             <div class="row">
-                <div class="col-xs-3"><span class="badge">Username</span></div>
+                <div class="col-xs-3"><span class="label label-as-badge label-info">Username</span></div>
                 <div class="col-xs-9">{{session.username}}</div>
             </div>
         </div>
     </div>
+    {% if locks %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">My SmartLocks</h3>
+        </div>
+        <div class="panel-body">
+            {% for lock in locks %}
+            <div class="row">
+                <div class="col-xs-3"><input type="checkbox" name="lock-{{lock.lock_id}}" {{ 'checked' if lock.is_locked else 'unchecked' }} ></input></div>
+                <div class="col-xs-9">{{lock.lock_id}}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script type="text/javascript">
+ var csrftoken = $('meta[name=csrf-token]').attr('content');
+ 
+ $.ajaxSetup({
+     beforeSend: function(xhr, settings) {
+         if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+             xhr.setRequestHeader("X-CSRFToken", csrftoken)
+         }
+     }
+ });
+
+ {% if locks %}
+ {% for lock in locks %}
+ $("input[name='lock-{{lock.lock_id}}']").bootstrapSwitch({
+     size: "mini",
+     state: {{lock.is_locked|lower}},
+     onText: " <i class='fa fa-lock'></i> ",
+     offText: " <i class='fa fa-unlock'></i> ",
+     onColor: 'danger',
+     offColor: 'success',
+ });
+ $("input[name='lock-{{lock.lock_id}}']").on('switchChange.bootstrapSwitch', function(event, state) {
+     if (state) {
+         $.ajax({ type: "GET",   
+                  url: "/open/{{lock.lock_id}}",   
+                  async: true,
+                  success : function(text)
+             {
+                 alert(text);
+             }
+         });
+     } else {
+         $.ajax({ type: "GET",   
+                  url: "/close/{{lock.lock_id}}",   
+                  async: true,
+                  success : function(text)
+             {
+                 alert(text);
+             }
+         });
+     }
+ });
+ {% endfor %}
+ {% endif %}
+ 
+</script>
 {% endblock %}

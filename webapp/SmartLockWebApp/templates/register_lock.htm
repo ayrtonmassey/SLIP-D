@@ -1,0 +1,24 @@
+{% extends 'base.htm' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block content %}
+<div class="emspace"></div>
+{% block flashes %}
+{{super()}}
+{% endblock %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+                <h2 class="text-center">Register Lock</h2>
+                <form  method="post" role="form">
+                    {{ form.hidden_tag() }}
+                    {{ wtf.form_errors(form, hiddens="only") }}
+
+                    {{ wtf.form_field(form.lock_id) }}
+                    <div class="text-center">
+                        {{ wtf.form_field(form.submit, button_map={'submit' : 'primary'}) }}
+                    </div>
+                </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

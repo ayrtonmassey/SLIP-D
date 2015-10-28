@@ -1,0 +1,26 @@
+{% extends 'base.htm' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block content %}
+<div class="emspace"></div>
+{% block flashes %}
+{{super()}}
+{% endblock %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <h1 class="text-center">New to {{app_name}}?</h1>
+            <p class="text-center">If you own a SmartLock, you'll be able to register it with your new account once you've signed up.</p>
+                <h2 class="text-center">Register</h2>
+                <form  method="post" role="form">
+                    {{ form.hidden_tag() }}
+                    {{ wtf.form_errors(form, hiddens="only") }}
+
+                    {{ wtf.form_field(form.lock_id) }}
+                    <div class="text-center">
+
+                    </div>
+                </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

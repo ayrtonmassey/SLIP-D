@@ -1,5 +1,5 @@
 from flask.ext.wtf import Form
-from wtforms import TextField, PasswordField, SubmitField, validators
+from wtforms import TextField, PasswordField, SubmitField, IntegerField, validators
 
 class LoginForm(Form):
     email = TextField('E-mail Address', [validators.Required(),validators.Email(message=u"Invalid E-mail Address.")])
@@ -21,5 +21,12 @@ class RegisterForm(Form):
     password = PasswordField('Password', [validators.Required(),
                                           validators.EqualTo('confirm_password', message=u'Passwords do not match.')]
     )
-    confirm_password = PasswordField('Password', [validators.Required()])
+    confirm_password = PasswordField('Confirm Password', [validators.Required()])
+
+    submit = SubmitField('Register')
+
+
+class RegisterLockForm(Form):
+    lock_id = IntegerField('Lock ID', [validators.Required()])
+    
     submit = SubmitField('Register')
