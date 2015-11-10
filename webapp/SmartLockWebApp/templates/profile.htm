@@ -57,7 +57,7 @@
      offColor: 'success',
  });
  $("input[name='lock-{{lock.lock_id}}']").on('switchChange.bootstrapSwitch', function(event, state) {
-     if (state) {
+     if (!state) {
          $.ajax({ type: "GET",   
                   url: "/open/{{lock.lock_id}}",   
                   async: true,
