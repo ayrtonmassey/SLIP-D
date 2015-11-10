@@ -46,7 +46,7 @@ def auth_headers(username,password):
 
 def get_locks():
     try:
-        response = requests.get(api_endpoint('has-lock'),
+        response = requests.get(api_endpoint('lock'),
                                 headers=session_auth_headers())
         if response.status_code == 200:
             data = json.loads(response.text)
@@ -143,7 +143,7 @@ def register_lock():
     if form.validate_on_submit():
         # Make a new database record
         try:
-            response = requests.post(api_endpoint('register-lock/{}'.format(form.lock_id.data)),
+            response = requests.post(api_endpoint('lock/'.format(form.lock_id.data)),
                                      headers=session_auth_headers())
             
             if response.status_code == 200:
@@ -162,14 +162,9 @@ def register_lock():
 @app.route('/login', methods=['GET', 'POST'])
 @login_prohibited
 def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
     form = LoginForm()
+    
     if form.validate_on_submit():
-        # Login and validate the user.
-        # user should be an instance of your `User` class
-
         try:
             response = requests.get(
                 api_endpoint('protected-resource'),
@@ -202,12 +197,10 @@ def login():
 @login_prohibited
 def register():
     form = RegisterForm(request.form)
-    # Validate inputs
+    
     if form.validate_on_submit():
-        # Make a new database record
-
         try:
-            response = requests.post(api_endpoint('register-user'),
+            response = requests.post(api_endpoint('user'),
                                     data={'email': form.email.data,
                                           'password': form.password.data
                                     }
