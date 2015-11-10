@@ -1,3 +1,5 @@
+import os
+
 #######################################
 # ======== Flask Application ======== #
 #######################################
@@ -6,7 +8,7 @@
 APP_NAME = 'SmartLock Management Interface'
 
 # The app's secret key.
-SECRET_KEY = 'your-app-secret-key'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 ################################
 # ======= SmartLock API ====== #
@@ -17,4 +19,4 @@ API_BASE_ADDR = 'http://slip-d.herokuapp.com'
 # API_BASE_ADDR = 'http://localhost:5000'
 
 # The domain of your site, e.g. www.mysite.com
-DOMAIN = 'localhost'
+DOMAIN = os.getenv('DOMAIN')
