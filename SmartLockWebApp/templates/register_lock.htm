@@ -14,6 +14,7 @@
                     {{ wtf.form_errors(form, hiddens="only") }}
 
                     {{ wtf.form_field(form.lock_id) }}
+                    {{ wtf.form_field(form.lock_name) }}
                     <div class="text-center">
                         {{ wtf.form_field(form.submit, button_map={'submit' : 'primary'}) }}
                     </div>

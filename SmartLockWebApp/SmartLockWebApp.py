@@ -13,6 +13,16 @@ from flask_wtf.csrf import CsrfProtect
 CsrfProtect(app)
 
 #################################
+# ========= Logging =========== #
+#################################
+
+import logging
+import sys
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.DEBUG)
+
+
+#################################
 # ========= Bootstrap ========= #
 #################################
 
@@ -28,8 +38,10 @@ Bootstrap(app)
 import requests
 from requests import ConnectionError
 
+
 def api_endpoint(endpoint=''):
     return '{}/{}'.format(API_BASE_ADDR,endpoint)
+
 
 def session_auth_headers():
     if 'username' in session and 'password' in session and session['username'] and session['password']:
@@ -38,10 +50,26 @@ def session_auth_headers():
         }
     return None
 
+
 def auth_headers(username,password):
     return {
         'Authorization': 'Basic ' + b64encode("{}:{}".format(username, password))
     }
+
+
+def get_user():
+    try:
+        response = requests.get(api_endpoint('me'),
+                                headers=session_auth_headers())
+        if response.status_code == 200:
+            data = json.loads(response.text)
+            return data
+        else:
+            flash('Could not retreive user data: Status {}. Please try again later.'.format(response.status_code), 'warning')
+    except ConnectionError as ex:
+        flash('Could not retreive list of locks. Please try again later.', 'warning')
+        
+    return None    
 
 
 def get_locks():
@@ -129,10 +157,11 @@ def close(lock_id):
 @app.route('/profile')
 @login_required
 def profile():
-    locks = get_locks()
-    if not locks:
+    user_info = get_user()
+    lock_info = sorted(get_locks(), key=lambda k: k['id'])
+    if not lock_info:
         flash(Markup('You don\'t have any locks yet. If you own a lock, click <a href="/profile/register-lock" class="alert-link">here</a> to register it.'), 'info')
-    return render_template('profile.htm', app_name=APP_NAME, page='Home', locks=locks)
+    return render_template('profile.htm', app_name=APP_NAME, page='Home', user_info=user_info, lock_info=lock_info)
 
 
 @app.route('/profile/register-lock', methods=['GET','POST'])
@@ -143,10 +172,12 @@ def register_lock():
     if form.validate_on_submit():
         # Make a new database record
         try:
-            response = requests.post(api_endpoint('lock/'.format(form.lock_id.data)),
+            response = requests.post(api_endpoint('lock'),
+                                     data={'lock_id'  : form.lock_id.data,
+                                           'lock_name': form.lock_name.data},
                                      headers=session_auth_headers())
             
-            if response.status_code == 200:
+            if response.status_code == 201:
                 flash('Registered lock {} successfully!'.format(form.lock_id.data),'success')
                 return redirect(url_for('profile'))
             elif response.status_code == 406:
@@ -170,13 +201,13 @@ def login():
                 api_endpoint('protected-resource'),
                 headers=auth_headers(form.email.data, form.password.data)
             )
-
+            
             if response.status_code == 200:
 
                 flash('Logged in successfully.','success')
 
-                session['username'] = form.email.data
-                session['password'] = form.password.data
+                session['username']   = form.email.data
+                session['password']   = form.password.data
 
                 next = request.args.get('next')
                 # next_is_valid should check if the user has valid
@@ -201,8 +232,10 @@ def register():
     if form.validate_on_submit():
         try:
             response = requests.post(api_endpoint('user'),
-                                    data={'email': form.email.data,
-                                          'password': form.password.data
+                                    data={'email'     : form.email.data,
+                                          'password'  : form.password.data,
+                                          'first_name': form.first_name.data,
+                                          'last_name' : form.last_name.data,
                                     }
             )
                 

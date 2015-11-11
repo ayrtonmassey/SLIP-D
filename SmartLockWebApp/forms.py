@@ -16,6 +16,9 @@ class RegisterForm(Form):
     confirm_email = TextField('Confirm E-mail Address', [validators.Required(),
                                                          validators.Email(message=u'Invalid e-mail address')]
     )
+
+    first_name = TextField('First Name', [validators.Required()])
+    last_name  = TextField('Last Name' , [validators.Required()])
     
     # Password Fields
     password = PasswordField('Password', [validators.Required(),
@@ -28,5 +31,7 @@ class RegisterForm(Form):
 
 class RegisterLockForm(Form):
     lock_id = IntegerField('Lock ID', [validators.Required()])
+    
+    lock_name = TextField('Choose a Name', [validators.Required(message="Please provide a name to help you identify your lock.")])
     
     submit = SubmitField('Register')

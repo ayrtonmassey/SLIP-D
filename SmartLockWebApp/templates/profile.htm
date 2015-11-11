@@ -12,20 +12,36 @@
         <div class="panel-body">
             <div class="row">
                 <div class="col-xs-3"><span class="label label-as-badge label-info">Username</span></div>
-                <div class="col-xs-9">{{session.username}}</div>
+                <div class="col-xs-9">{{user_info['email']}}</div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3"><span class="label label-as-badge label-info">First Name</span></div>
+                <div class="col-xs-9">{{user_info['first_name'] if user_info['first_name'] else "n/a"}}</div>
+            </div>
+            <div class="row">
+                <div class="col-xs-3"><span class="label label-as-badge label-info">Last Name</span></div>
+                <div class="col-xs-9">{{user_info['last_name'] if user_info['last_name'] else "n/a"}}</div>
             </div>
         </div>
     </div>
-    {% if locks %}
+    {% if lock_info %}
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">My SmartLocks</h3>
+            <div class="row">
+                <div class="col-xs-9">
+                    <h3 class="panel-title" style="line-height: 20px">My SmartLocks</h3>
+                </div>
+                <div class="col-xs-3">
+                    <a href="/profile/register-lock" class="btn btn-xs btn-primary pull-right">Register</a>
+                </div>
+            </div>
         </div>
         <div class="panel-body">
-            {% for lock in locks %}
+            {% for lock in lock_info %}
             <div class="row">
-                <div class="col-xs-3"><input type="checkbox" name="lock-{{lock.lock_id}}" {{ 'checked' if lock.is_locked else 'unchecked' }} ></input></div>
-                <div class="col-xs-9">{{lock.lock_id}}</div>
+                <div class="container">
+                    <input type="checkbox" name="lock-{{lock.id}}" {{ 'checked' if lock.locked else 'unchecked' }}><span style="padding-left:10px">{{lock.name}} ({{lock.id}})</span></input>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -46,20 +62,20 @@
      }
  });
 
- {% if locks %}
- {% for lock in locks %}
- $("input[name='lock-{{lock.lock_id}}']").bootstrapSwitch({
+ {% if lock_info %}
+ {% for lock in lock_info %}
+ $("input[name='lock-{{lock.id}}']").bootstrapSwitch({
      size: "mini",
-     state: {{lock.is_locked|lower}},
+     state: {{lock.locked|lower}},
      onText: " <i class='fa fa-lock'></i> ",
      offText: " <i class='fa fa-unlock'></i> ",
      onColor: 'danger',
      offColor: 'success',
  });
- $("input[name='lock-{{lock.lock_id}}']").on('switchChange.bootstrapSwitch', function(event, state) {
+ $("input[name='lock-{{lock.id}}']").on('switchChange.bootstrapSwitch', function(event, state) {
      if (!state) {
          $.ajax({ type: "GET",   
-                  url: "/open/{{lock.lock_id}}",   
+                  url: "/open/{{lock.id}}",
                   async: true,
                   success : function(text)
              {
@@ -68,7 +84,7 @@
          });
      } else {
          $.ajax({ type: "GET",   
-                  url: "/close/{{lock.lock_id}}",   
+                  url: "/close/{{lock.id}}",
                   async: true,
                   success : function(text)
              {
