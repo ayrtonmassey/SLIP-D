@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, flash, request, abort, redirect, url_for, Markup
+from flask import Flask, render_template, session, flash, request, abort, redirect, url_for, Markup, jsonify
 from config import *
 from forms import LoginForm, RegisterForm, RegisterLockForm
 from base64 import b64encode
@@ -140,18 +140,33 @@ def index():
     return render_template('index.htm', app_name=APP_NAME, page='Home')
 
 
-@app.route('/open/<lock_id>')
+@app.route('/open/<lock_id>', methods=['PUT'])
 @login_required
 def open(lock_id):
-    return repr(requests.put(api_endpoint('open/{}'.format(lock_id)),
-                              headers=session_auth_headers()))
+    response = requests.put(api_endpoint('open/{}'.format(lock_id)),
+                        headers=session_auth_headers())
+    return (response.text, response.status_code, response.headers.items())
 
-    
-@app.route('/close/<lock_id>')
+
+@app.route('/close/<lock_id>', methods=['PUT'])
 @login_required
 def close(lock_id):
-    return repr(requests.put(api_endpoint('close/{}'.format(lock_id)),
-                              headers=session_auth_headers()))
+    response = requests.put(api_endpoint('close/{}'.format(lock_id)),
+                        headers=session_auth_headers())
+
+    return (response.text, response.status_code, response.headers.items())
+
+
+@app.route('/status/<lock_id>', methods=['GET'])
+@login_required
+def status(lock_id):
+    # response = requests.get(api_endpoint('status/{}'.format(lock_id)),
+    #                     headers=session_auth_headers())
+    # return (response.text, response.status_code, response.headers.items())
+    return jsonify({
+            'locked' : True,
+            'pending': True,
+    })
     
 
 @app.route('/profile')

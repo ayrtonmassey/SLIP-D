@@ -1,0 +1,19 @@
+.btn-lock {
+    font-size: 20px;
+}
+
+.btn-lock.btn-warning {
+    text-shadow: 0px 0px 1px #b07d1e;
+}
+
+.btn-lock.btn-danger {
+    text-shadow: 0px 0px 1px #a9231f;
+}
+
+.btn-lock.btn-success {
+    text-shadow: 0px 0px 1px #2c882c;
+}
+
+.btn-lock.btn-default {
+    text-shadow: 0px 0px 1px #555555;
+}
