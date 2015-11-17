@@ -15,7 +15,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 ################################
 
 # The domain/port of the API.
-API_BASE_ADDR = 'http://slip-d-3.herokuapp.com'
+API_BASE_ADDR = 'http://slip-d-4.herokuapp.com'
 # API_BASE_ADDR = 'http://localhost:5000'
 
 # The domain of your site, e.g. www.mysite.com

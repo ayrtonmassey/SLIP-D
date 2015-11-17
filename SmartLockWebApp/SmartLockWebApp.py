@@ -10,7 +10,7 @@ app.secret_key = SECRET_KEY
 app.debug = True
 
 from flask_wtf.csrf import CsrfProtect
-CsrfProtect(app)
+csrf = CsrfProtect(app)
 
 #################################
 # ========= Logging =========== #
@@ -140,33 +140,22 @@ def index():
     return render_template('index.htm', app_name=APP_NAME, page='Home')
 
 
-@app.route('/open/<lock_id>', methods=['PUT'])
+@app.route('/open/<lock_id>', methods=['POST'])
 @login_required
 def open(lock_id):
     response = requests.put(api_endpoint('open/{}'.format(lock_id)),
                         headers=session_auth_headers())
     return (response.text, response.status_code, response.headers.items())
 
-
-@app.route('/close/<lock_id>', methods=['PUT'])
-@login_required
-def close(lock_id):
-    response = requests.put(api_endpoint('close/{}'.format(lock_id)),
-                        headers=session_auth_headers())
-
-    return (response.text, response.status_code, response.headers.items())
+csrf.exempt(open)
 
 
 @app.route('/status/<lock_id>', methods=['GET'])
 @login_required
 def status(lock_id):
-    # response = requests.get(api_endpoint('status/{}'.format(lock_id)),
-    #                     headers=session_auth_headers())
-    # return (response.text, response.status_code, response.headers.items())
-    return jsonify({
-            'locked' : True,
-            'pending': True,
-    })
+    response = requests.get(api_endpoint('lock/{}'.format(lock_id)),
+                        headers=session_auth_headers())
+    return (response.text, response.status_code, response.headers.items())
     
 
 @app.route('/profile')
