@@ -1,30 +1,31 @@
 import requests
-import datetime
 import time
 import sys
+import json
 
-is_open = False
-close_time = datetime.datetime.max
 lock_id = sys.argv[1]
 
-API_BASE_ADDR="http://slip-d-4.herokuapp.com/"
+# API_BASE_ADDR="http://slip-d-4.herokuapp.com/"
+API_BASE_ADDR="http://localhost:5000/"
 
 def api_endpoint(endpoint=''):
     return '{}/{}'.format(API_BASE_ADDR,endpoint)
+
+response = requests.get(api_endpoint('im-open/{}'.format(lock_id)))
+data = json.loads(response.text)
+is_open = data
 
 while(True):
     if is_open:
         print "{}: open".format(lock_id)
         response = requests.get(api_endpoint('im-open/{}'.format(lock_id)))
-        if datetime.datetime.now() > close_time:
-            print "{}: closing...".format(lock_id)
+        if response.status_code == 200:
             is_open = False
-            close_time = datetime.datetime.max
+            print "{}: closing...".format(lock_id)
     else:
         print "{}: closed".format(lock_id)
         response = requests.get(api_endpoint('im-closed/{}'.format(lock_id)))
         if response.status_code == 200:
             is_open = True
-            close_time = datetime.datetime.now() + datetime.timedelta(0,10)
-            print "{}: opening... closing at {}".format(lock_id, close_time)
+            print "{}: opening...".format(lock_id)
     time.sleep(1)

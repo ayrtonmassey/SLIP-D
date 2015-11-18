@@ -1,1 +1,1 @@
-web: gunicorn SmartLockWebApp.SmartLockWebApp:app
+web: gunicorn SmartLockWebApp.SmartLockWebApp:app -b 127.0.0.1:8000

@@ -150,6 +150,16 @@ def open(lock_id):
 csrf.exempt(open)
 
 
+@app.route('/close/<lock_id>', methods=['POST'])
+@login_required
+def close(lock_id):
+    response = requests.put(api_endpoint('close/{}'.format(lock_id)),
+                        headers=session_auth_headers())
+    return (response.text, response.status_code, response.headers.items())
+
+csrf.exempt(close)
+
+
 @app.route('/status/<lock_id>', methods=['GET'])
 @login_required
 def status(lock_id):
@@ -162,9 +172,11 @@ def status(lock_id):
 @login_required
 def profile():
     user_info = get_user()
-    lock_info = sorted(get_locks(), key=lambda k: k['id'])
+    lock_info = get_locks()
     if not lock_info:
         flash(Markup('You don\'t have any locks yet. If you own a lock, click <a href="/profile/register-lock" class="alert-link">here</a> to register it.'), 'info')
+    else:
+        sorted(lock_info, key=lambda k: k['id'])
     return render_template('profile.htm', app_name=APP_NAME, page='Home', user_info=user_info, lock_info=lock_info)
 
 

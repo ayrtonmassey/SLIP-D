@@ -5,7 +5,7 @@ import os
 #######################################
 
 # The app's name, as displayed in page content.
-APP_NAME = 'SmartLock Management Interface'
+APP_NAME = 'smartlock'
 
 # The app's secret key.
 SECRET_KEY = os.getenv('SECRET_KEY')

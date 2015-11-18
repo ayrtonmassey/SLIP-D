@@ -11,16 +11,22 @@
         </div>
         <div class="panel-body">
             <div class="row">
-                <div class="col-xs-3"><span class="label label-as-badge label-info">Username</span></div>
-                <div class="col-xs-9">{{user_info['email']}}</div>
+                <div class="container">
+                    <span class="label label-as-badge label-info label-user-info">Username</span>
+                    {{user_info['email']}}
+                </div>
             </div>
             <div class="row">
-                <div class="col-xs-3"><span class="label label-as-badge label-info">First Name</span></div>
-                <div class="col-xs-9">{{user_info['first_name'] if user_info['first_name'] else "n/a"}}</div>
+                <div class="container">
+                    <span class="label label-as-badge label-info label-user-info">First Name</span>
+                    {{user_info['first_name'] if user_info['first_name'] else "n/a"}}
+                </div>
             </div>
             <div class="row">
-                <div class="col-xs-3"><span class="label label-as-badge label-info">Last Name</span></div>
-                <div class="col-xs-9">{{user_info['last_name'] if user_info['last_name'] else "n/a"}}</div>
+                <div class="container">
+                    <span class="label label-as-badge label-info label-user-info">Last Name</span>
+                    {{user_info['last_name'] if user_info['last_name'] else "n/a"}}
+                </div>
             </div>
         </div>
     </div>
@@ -40,7 +46,10 @@
             {% for lock in lock_info %}
             <div class="row">
                 <div class="container">
-                    <button name="lock-{{lock.id}}" class="btn btn-lock btn-default">?</button><span style="padding-left:10px">{{lock.name}} ({{lock.id}})</span>
+                    <p>
+                        <button name="lock-{{lock.id}}" class="btn btn-lock btn-default">?</button>
+                        <span style="padding-left:10px">{{lock.name}} ({{lock.id}})</span>
+                    </p>
                 </div>
             </div>
             {% endfor %}
