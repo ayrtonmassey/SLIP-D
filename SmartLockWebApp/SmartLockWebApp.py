@@ -140,6 +140,75 @@ def index():
     return render_template('index.htm', app_name=APP_NAME, page='Home')
 
 
+@app.route('/friends')
+@login_required
+def friends():
+    response = requests.get(api_endpoint('friend'),
+                              headers=session_auth_headers())
+    friends = None
+    if response.status_code == 200:
+        friends = json.loads(response.text)
+    else:
+        flash('Could not retreive list of friends: Status {}. Please try again later.'.format(response.status_code), 'warning')
+    return render_template('friends.htm', app_name=APP_NAME, page='Friends', friends=friends)
+
+
+@app.route('/friends/add/<friend_id>')
+@login_required
+def add_friend(friend_id):
+    response = requests.post(api_endpoint('friend'),
+                             data={'friend_id': friend_id},
+                             headers=session_auth_headers())
+    next = request.args.get('next')
+    # next_is_valid should check if the user has valid
+    # permission to access the `next` url
+    # if not next_is_valid(next):
+    #     return abort(400)
+    return redirect(next or url_for('friends'))
+
+
+
+@app.route('/friends/remove/<friend_id>')
+@login_required
+def remove_friend(friend_id):
+    response = requests.delete(api_endpoint('friend'),
+                              data={'friend_id': friend_id},
+                              headers=session_auth_headers())
+    next = request.args.get('next')
+    # next_is_valid should check if the user has valid
+    # permission to access the `next` url
+    # if not next_is_valid(next):
+    #     return abort(400)
+
+    return redirect(next or url_for('friends'))
+
+
+@app.route('/users')
+@login_required
+def users():
+    u_response = requests.get(api_endpoint('user'),
+                            headers=session_auth_headers())
+    f_response = requests.get(api_endpoint('friend'),
+                            headers=session_auth_headers())
+    user_data = u_response.text
+    friend_data = f_response.text
+    if u_response.status_code == 200 and f_response.status_code == 200:
+        user_data = json.loads(user_data)
+        friend_data = json.loads(friend_data)
+        friend_ids = [ f['id'] for f in friend_data ]
+        data = []
+        for d in user_data:
+            if d['email'] != session['username']:
+                datum = {}
+                datum['name'] = '{} {}'.format(d['first_name'],d['last_name'])
+                datum['is_friend'] = (d['id'] in friend_ids)
+                datum['id'] = d['id']
+                data.append(datum)
+        return json.dumps(data), 200, {'Content-Type': 'application/json'}
+    else:
+        return (False, 404, {})
+
+
 @app.route('/open/<lock_id>', methods=['POST'])
 @login_required
 def open(lock_id):
@@ -177,7 +246,27 @@ def profile():
         flash(Markup('You don\'t have any locks yet. If you own a lock, click <a href="/profile/register-lock" class="alert-link">here</a> to register it.'), 'info')
     else:
         sorted(lock_info, key=lambda k: k['id'])
-    return render_template('profile.htm', app_name=APP_NAME, page='Home', user_info=user_info, lock_info=lock_info)
+    return render_template('profile.htm', app_name=APP_NAME, page=session['username'], user_info=user_info, lock_info=lock_info)
+
+
+@app.route('/profile/<user_id>')
+@login_required
+def user_profile(user_id):
+    u_response = requests.get(api_endpoint('user/{}'.format(user_id)),
+                            headers=session_auth_headers())
+    f_response = requests.get(api_endpoint('friend'),
+                            headers=session_auth_headers())
+    user_info = u_response.text
+    friend_data = f_response.text
+    if u_response.status_code == 200 and f_response.status_code == 200:
+        user_info = json.loads(user_info)
+        friend_data = json.loads(friend_data)
+        friend_ids = [ f['id'] for f in friend_data ]
+        if user_info['email'] != session['username']:
+            user_info['is_friend'] = (user_info['id'] in friend_ids)
+        return render_template('user_profile.htm', app_name=APP_NAME, page='{} {}'.format(user_info['first_name'],user_info['last_name']), user_info=user_info)
+    else:
+        return False, 404, {}
 
 
 @app.route('/profile/register-lock', methods=['GET','POST'])
@@ -237,7 +326,7 @@ def login():
                 flash('Login failed. Ensure your e-mail and password are correct and try again.','danger')
         except ConnectionError as ex:
             flash('Failed to connect to login server. Please try again later.', 'danger')
-    return render_template('login.html', app_name=APP_NAME, page='Login', form=form)
+    return render_template('login.html', app_name=APP_NAME, page='Log In', form=form)
 
 
 @app.route('/register', methods=['GET', 'POST'])

@@ -1,0 +1,44 @@
+{% extends 'base.htm' %}
+{% block content %}
+<div class="emspace"></div>
+{% block flashes %}
+{{super()}}
+{% endblock %}
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-xs-9">
+                    <h3 class="panel-title" style="line-height: 20px">User Details</h3>
+                </div>
+                <div class="col-xs-3">
+                    <a href="/friends/{{'remove' if user_info['is_friend'] else 'add'}}/{{user_info['id']}}?next=/profile/{{user_info['id']}}" class="btn btn-xs btn-{{'danger' if user_info['is_friend'] else 'success'}} pull-right"><strong>{{'Remove Friend' if user_info['is_friend'] else 'Add Friend'}}</strong> <i class="fa fa-{{'minus' if user_info['is_friend'] else 'plus'}}"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="container">
+                    <span class="label label-as-badge label-info label-user-info">Username</span>
+                    {{user_info['email']}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="container">
+                    <span class="label label-as-badge label-info label-user-info">First Name</span>
+                    {{user_info['first_name'] if user_info['first_name'] else "n/a"}}
+                </div>
+            </div>
+            <div class="row">
+                <div class="container">
+                    <span class="label label-as-badge label-info label-user-info">Last Name</span>
+                    {{user_info['last_name'] if user_info['last_name'] else "n/a"}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+{% endblock %}
