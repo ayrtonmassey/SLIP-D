@@ -54,7 +54,7 @@ function check_lock_status(lock_id) {
                             },
                           });
     var data = JSON.parse(response.responseText);
-    if (data.requested_open) {
+    if ((data.requested_open && !data.actually_open) || (!data.requested_open && data.actually_open)) {
         return LOCK_STATES.PENDING;
     } else {
         if (data.actually_open) {
