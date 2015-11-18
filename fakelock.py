@@ -5,8 +5,8 @@ import json
 
 lock_id = sys.argv[1]
 
-# API_BASE_ADDR="http://slip-d-4.herokuapp.com/"
-API_BASE_ADDR="http://localhost:5000/"
+API_BASE_ADDR="http://slip-d-4.herokuapp.com/"
+# API_BASE_ADDR="http://localhost:5000/"
 
 def api_endpoint(endpoint=''):
     return '{}/{}'.format(API_BASE_ADDR,endpoint)
