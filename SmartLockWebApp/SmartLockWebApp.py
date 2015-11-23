@@ -1,4 +1,5 @@
 from flask import Flask, render_template, session, flash, request, abort, redirect, url_for, Markup, jsonify
+from werkzeug.exceptions import BadRequest
 from config import *
 from forms import LoginForm, RegisterForm, RegisterLockForm
 from base64 import b64encode
@@ -167,7 +168,6 @@ def add_friend(friend_id):
     return redirect(next or url_for('friends'))
 
 
-
 @app.route('/friends/remove/<friend_id>')
 @login_required
 def remove_friend(friend_id):
@@ -183,32 +183,54 @@ def remove_friend(friend_id):
     return redirect(next or url_for('friends'))
 
 
-@app.route('/users')
+@app.route('/friend_search_data')
 @login_required
-def users():
+def friend_search_data():
+    lock_id = request.args.get('lock_id',None)
+    if lock_id:
+        u_l_response = requests.get(api_endpoint('user?lock_id={}'.format(lock_id)),
+                              headers=session_auth_headers())
+        user_lock_data = u_l_response.text
+
     u_response = requests.get(api_endpoint('user'),
-                            headers=session_auth_headers())
-    f_response = requests.get(api_endpoint('friend'),
-                            headers=session_auth_headers())
+                              headers=session_auth_headers())
+
     user_data = u_response.text
-    friend_data = f_response.text
-    if u_response.status_code == 200 and f_response.status_code == 200:
+    if u_response.status_code == 200:
         user_data = json.loads(user_data)
-        friend_data = json.loads(friend_data)
-        friend_ids = [ f['id'] for f in friend_data ]
-        data = []
-        for d in user_data:
-            if d['email'] != session['username']:
-                datum = {}
-                datum['name'] = '{} {}'.format(d['first_name'],d['last_name'])
-                datum['is_friend'] = (d['id'] in friend_ids)
-                datum['id'] = d['id']
-                data.append(datum)
-        return json.dumps(data), 200, {'Content-Type': 'application/json'}
+
+        user_data = map(lambda u: dict(u,**{
+            'is_self': u['email'] == session['username'],
+            'name': '{} {}'.format(u['first_name'],u['last_name'])
+        }),user_data)
+
+        is_friend = request.args.get('is_friend',None)
+        if is_friend is not None:
+            is_friend = not(is_friend in ['False','false','0'])
+            user_data = filter(lambda u: u['is_friend'] == is_friend,user_data)
+        
+        is_self = request.args.get('is_self',None)
+        if is_self is not None:
+            is_self = not(is_self in ['False','false','0'])
+            user_data = filter(lambda u: u['is_self'] == is_self,user_data)            
+
+        if lock_id:
+            if u_l_response.status_code == 200:
+                user_lock_data = json.loads(user_lock_data)
+                lock_user_ids = [ user['id'] for user in user_lock_data ]
+                user_data = map(lambda u: dict(u,**{'has_access': (u['id'] in lock_user_ids) }), user_data)
+                filter_access = request.args.get('has_access',None)
+                if filter_access is not None:
+                    filter_access = not(filter_access in ['False','false','0'])
+                    user_data = filter(lambda u: u['has_access'] == filter_access,user_data)
+            else:
+                return json.dumps({'detail': 'Error loading lock data.'}), 404, {'Content-Type': 'application/json'}
+            
+        return json.dumps(user_data,indent=4,sort_keys=True), 200, {'Content-Type': 'application/json'}
     else:
-        return (False, 404, {})
+        return json.dumps({'detail': 'Error loading friend and/or user data.'}), 404, {'Content-Type': 'application/json'}
 
-
+    
 @app.route('/open/<lock_id>', methods=['POST'])
 @login_required
 def open(lock_id):
@@ -241,12 +263,57 @@ def status(lock_id):
 @login_required
 def profile():
     user_info = get_user()
+    return render_template('profile.htm', app_name=APP_NAME, page=session['username'], user_info=user_info)
+
+
+@app.route('/locks')
+@login_required
+def locks():
     lock_info = get_locks()
     if not lock_info:
         flash(Markup('You don\'t have any locks yet. If you own a lock, click <a href="/profile/register-lock" class="alert-link">here</a> to register it.'), 'info')
     else:
-        sorted(lock_info, key=lambda k: k['id'])
-    return render_template('profile.htm', app_name=APP_NAME, page=session['username'], user_info=user_info, lock_info=lock_info)
+        lock_info = sorted(lock_info, key=lambda k: k['id'])
+    return render_template('locks.htm', app_name=APP_NAME, page='Locks', lock_info=lock_info)
+
+
+@app.route('/locks/<lock_id>')
+@login_required
+def lock(lock_id):
+    l_response = requests.get(api_endpoint('lock/{}'.format(lock_id)),
+                              headers=session_auth_headers())
+    client = app.test_client()
+    u_response = client.get('/friend_search_data?lock_id={}&has_access=true'.format(lock_id), headers=list(request.headers))
+    lock_info = json.loads(l_response.text)
+    user_info = json.loads(u_response.data)
+    user_info = sorted(user_info, key=lambda k: {True: '', False: k['name']}[lock_info['owner_id']==k['id']])
+    return render_template('lock.htm', app_name=APP_NAME, page='Lock: {}'.format(lock_info['name']), user_info=user_info, lock_info=lock_info)
+
+
+@app.route('/friend_lock', methods=['POST','DELETE'])
+@login_required
+def friend_lock():
+    data = dict(request.form)
+    data.pop('csrf_token')
+    if request.form['_method'] == 'POST':
+        response = requests.post(api_endpoint('friend-lock'),
+                                 data=data,
+                                 headers=session_auth_headers())
+        if response.status_code != 201:
+            flash('Status {}: Error adding friend to lock, please try again later.'.format(response.status_code),'danger')
+    elif request.form['_method'] == 'DELETE':
+        response = requests.delete(api_endpoint('friend-lock'),
+                                   data=data,
+                                   headers=session_auth_headers())
+        if response.status_code != 200:
+            flash('Status {}: Error adding friend to lock, please try again later.'.format(response.status_code),'danger')
+
+    next = request.args.get('next')
+    # next_is_valid should check if the user has valid
+    # permission to access the `next` url
+    # if not next_is_valid(next):
+    #     return abort(400)
+    return redirect(next or url_for('profile'))
 
 
 @app.route('/profile/<user_id>')
@@ -258,15 +325,19 @@ def user_profile(user_id):
                             headers=session_auth_headers())
     user_info = u_response.text
     friend_data = f_response.text
-    if u_response.status_code == 200 and f_response.status_code == 200:
+    if u_response.status_code == 200:
         user_info = json.loads(user_info)
-        friend_data = json.loads(friend_data)
-        friend_ids = [ f['id'] for f in friend_data ]
-        if user_info['email'] != session['username']:
-            user_info['is_friend'] = (user_info['id'] in friend_ids)
-        return render_template('user_profile.htm', app_name=APP_NAME, page='{} {}'.format(user_info['first_name'],user_info['last_name']), user_info=user_info)
+        if f_response.status_code == 200:
+            friend_data = json.loads(friend_data)
+            friend_ids = [ f['id'] for f in friend_data ]
+            if user_info['email'] != session['username']:
+                user_info['is_friend'] = (user_info['id'] in friend_ids)
+        else:
+            flash('Status {}: Could not retrieve friend data, please try again later.'.format(u_response.status_code),'warning')
+            return render_template('user_profile.htm', app_name=APP_NAME, page='{} {}'.format(user_info['first_name'],user_info['last_name']), user_info=user_info)
     else:
-        return False, 404, {}
+        flash('Status {}: Could not retrieve user data, please try again later.'.format(u_response.status_code),'danger')
+        return redirect(url_for('index'))
 
 
 @app.route('/profile/register-lock', methods=['GET','POST'])
@@ -311,8 +382,9 @@ def login():
 
                 flash('Logged in successfully.','success')
 
-                session['username']   = form.email.data
-                session['password']   = form.password.data
+                session['username'] = form.email.data
+                session['password'] = form.password.data
+                session['user']     = get_user()
 
                 next = request.args.get('next')
                 # next_is_valid should check if the user has valid

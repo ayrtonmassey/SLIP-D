@@ -1,5 +1,4 @@
 {% extends 'base.htm' %}
-{% import 'bootstrap/wtf.html' as wtf %}
 {% block content %}
 <div class="emspace"></div>
 {% block flashes %}
@@ -7,20 +6,91 @@
 {% endblock %}
 <div class="container">
     <div class="row">
-        <div class="col-md-6 col-md-offset-3">
-            <h1 class="text-center">New to {{app_name}}?</h1>
-            <p class="text-center">If you own a SmartLock, you'll be able to register it with your new account once you've signed up.</p>
-                <h2 class="text-center">Register</h2>
-                <form  method="post" role="form">
-                    {{ form.hidden_tag() }}
-                    {{ wtf.form_errors(form, hiddens="only") }}
-
-                    {{ wtf.form_field(form.lock_id) }}
-                    <div class="text-center">
-
+        <div class="col-xs-12 col-sm-3 col-md-2">
+            <div class="btn-lock-max text-center">
+                <button name="lock-{{lock_info.id}}" class="btn btn-default"><i class="fa fa-question"></i></button>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-9 col-md-10">
+            <div class="panel panel-default panel-max" style="height: 100">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Lock</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="container">
+                            <span class="label label-as-badge label-info label-user-info">Name</span>
+                            {{lock_info['id']}}
+                        </div>
+                        <div class="container">
+                            <span class="label label-as-badge label-info label-user-info">Name</span>
+                            {{lock_info['name']}}
+                        </div>
                     </div>
-                </form>
+                </div>
+            </div>
         </div>
     </div>
+    {% if lock_info.owner_id == session['user'].id %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Add Friends</h3>
+        </div>
+        <div class="panel-body">
+            <div id="friend-lock-search" class="input-group">
+                <input class="typeahead form-control" type="text" placeholder="Search People...">
+                <form id="add-form" action="/friend_lock?next=/locks/{{lock_info.id}}" method="post" class="input-group-btn">
+                    <input type="hidden" name="_method" value="POST" />
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <input type="hidden" name="friend_id" />
+                    <input type="hidden" name="lock_id" value="{{lock_info.id}}" />
+                    <button class="btn btn-success" type="submit" formaction="/friend_lock?next=/locks/{{lock_info.id}}" disabled><i class="fa fa-plus"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% if user_info %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Friends</h3>
+        </div>
+        <div class="panel-body">
+            <div class="col-xs-12">
+                {% for user in user_info %}
+                <div class="row hover-darken top-buffer">
+                    <div class="col-xs-12">
+                        <span class="label label-as-badge label-{{ 'success' if lock_info.owner_id == user.id else 'info' }} label-user-info">{{ 'Owner' if lock_info.owner_id == user.id else 'Friend' }}</span>
+                        {{user.name}}
+                        <span class="pull-right">
+                            <a class="btn btn-primary btn-xs" href="profile/{{user.id}}">
+                                <i class="fa fa-user"></i>
+                            </a>
+                            {% if ((not user.is_self) and lock_info.owner_id==session['user'].id) %}
+                            <form action="/friend_lock?next=/locks/{{lock_info.id}}" method="post" style="display:inline-block">
+                                <input type="hidden" name="_method" value="{{'DELETE' if user.has_access else 'POST'}}" />
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                <input type="hidden" name="friend_id" value="{{user.id}}"/>
+                                <input type="hidden" name="lock_id" value="{{lock_info.id}}" />
+                                <button class="btn btn-xs btn-{{'danger' if user.has_access else 'success'}}" type="submit" formaction="/friend_lock?next=/locks/{{lock_info.id}}"><i class="fa fa-{{'minus' if user.has_access else 'plus'}}"></i></button>
+                            </form>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script type="text/javascript" src="/static/js/lock.js"></script>
+<script type="text/javascript">
+ LOCK_ID={{lock_info.id}}
+ update_lock_state({{lock_info.id}});
+</script>
+<script type="text/javascript" src="/static/js/friend-lock.js"></script>
 {% endblock %}
