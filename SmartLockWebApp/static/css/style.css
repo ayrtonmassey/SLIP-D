@@ -20,14 +20,14 @@
 .btn-lock-max .btn i {
     position: absolute;
     top: 50%;
-    left: 24%;
+    right: 24%;
     line-height: 0;
     font-size: 60vw;
     margin: 0;
 }
 
 .btn-lock-max .btn i.fa-lock {
-    left: 29%;
+    right: 29%;
 }
 
 @media screen and (min-width: 768px) {
@@ -43,14 +43,14 @@
 
     .btn-lock-max .btn i {
         top: 45%;
-        left: 30%;
+        right: 30%;
         line-height: 0;
         font-size: 90px;
         margin: 0;
     }
 
     .btn-lock-max .btn i.fa-lock {
-        left: 35%;
+        right: 35%;
     }
 
 }
@@ -62,14 +62,14 @@
 
     .btn-lock-max .btn i {
         top: 45%;
-        left: 30%;
+        right: 30%;
         line-height: 0;
         font-size: 80px;
         margin: 0;
     }
 
     .btn-lock-max .btn i.fa-lock {
-        left: 34%;
+        right: 34%;
     }
 }
 
@@ -80,14 +80,14 @@
 
     .btn-lock-max .btn i {
         top: 45%;
-        left: 30%;
+        right: 30%;
         line-height: 0;
         font-size: 100px;
         margin: 0;
     }
 
     .btn-lock-max .btn i.fa-lock {
-        left: 34%;
+        right: 34%;
     }
 }
 
@@ -112,16 +112,15 @@
     text-align: center;
     width: 100px;
     padding: 5px;
-    margin: 5px 5px 5px 0;
 }
 
-.top-buffer {
-    margin-top:2px;
+.row span {
+    display: inline-block;
+    margin: 5px;
 }
 
 .hover-darken {
-    padding: 7px 0 7px 0;
-    border-radius: 3px;
+    vertical-align: middle;
 }
 
 .hover-darken:hover {

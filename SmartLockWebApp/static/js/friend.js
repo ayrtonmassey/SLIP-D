@@ -23,13 +23,19 @@ $('#friend-search .typeahead').typeahead(null, {
     templates: {
         empty: [
             '<div class="empty-message">',
-            'No users found with that name.',
+            '<p class="tt-suggestion">No users found with that name.</p>',
             '</div>'
         ].join('\n'),
         suggestion: function(d) {
-            return '<p><strong>' + d.name + '</strong> <span class="pull-right"><a class="btn btn-primary btn-xs" href="profile/'+ d.id + '"><i class="fa fa-user"></i></a> <a class="btn ' + (d.is_friend ? 'btn-danger' : 'btn-success') + ' btn-xs" href="/friends/' + (d.is_friend ? 'remove' : 'add') + '/' + d.id + '"><i class="fa fa-' + (d.is_friend ? 'minus' : 'plus') + '"></i></a></span></p>';
+            return '<p>' +
+                   '<strong>' + d.name + '</strong>' +
+                   '</p>'
         },
     }
 }).bind('typeahead:selected', function(obj, selected, name) {
-    $("#friend-search input[name='id']").prop('value',selected.id);
+    $("#friend-search input[name='friend_id']").prop('value',selected.id);
+    $("#friend-search button[name='add_remove']").prop('disabled',false).addClass((selected.is_friend ? 'btn-danger' : 'btn-success')).removeClass((selected.is_friend ? 'btn-success' : 'btn-danger'));
+    $("#friend-search button[name='add_remove'] i").addClass((selected.is_friend ? 'fa-minus' : 'fa-plus')).removeClass((selected.is_friend ? 'fa-plus' : 'fa-minus'))
+    $("#friend-search input[name='_method']").prop('value',(selected.is_friend ? 'DELETE' : 'POST'));
+    $("#friend-search button[name='search']").prop('disabled',false);
 });

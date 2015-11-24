@@ -23,7 +23,7 @@ $('#friend-lock-search .typeahead').typeahead(null, {
     templates: {
         empty: [
             '<div class="empty-message">',
-            'No users found with that name.',
+            '<p class="tt-suggestion">No users found with that name.</p>',
             '</div>'
         ].join('\n'),
         suggestion: function(d) {

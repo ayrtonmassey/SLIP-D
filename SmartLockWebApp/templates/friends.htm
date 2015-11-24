@@ -10,13 +10,20 @@
             <h3 class="panel-title">Add Friends</h3>
         </div>
         <div class="panel-body">
-            <div id="friend-search" class="input-group">
-                <input class="typeahead form-control" type="text" placeholder="Search People...">
-                <input type="hidden" name='id'>
+            <form id="friend-search" class="input-group" action="/friend?next=/friends" method="post">
+                <input type="hidden" name="_method" value="POST" />
+                <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+                <input type="hidden" name="friend_id" />
+                <input class="typeahead form-control" type="text" placeholder="Search People..." />
                 <span class="input-group-btn">
-                    <button class="btn btn-primary" type="button"><i class="fa fa-search"></i></button>
+                    <button class="btn btn-primary" type="submit" name="search" formaction="/profile" disabled>
+                        <i class="fa fa-search"></i>
+                    </button>
+                    <button class="btn btn-success" type="submit" name="add_remove" formaction="/friend?next=/friends" disabled>
+                        <i class="fa fa-plus"></i>
+                    </button>
                 </span>
-            </div>
+            </form>
         </div>
     </div>
     {% if friends %}
@@ -29,14 +36,21 @@
                 {% for friend in friends %}
                 <div class="row hover-darken top-buffer">
                     <div class="col-xs-12">
-                        {{friend.first_name}} {{friend.last_name}}
+                        <span>
+                            {{friend.first_name}} {{friend.last_name}}
+                        </span>
                         <span class="pull-right">
                             <a class="btn btn-primary btn-xs" href="profile/{{friend.id}}">
                                 <i class="fa fa-user"></i>
                             </a>
-                            <a class="btn btn-danger btn-xs" href="/friends/remove/{{friend.id}}">
-                                <i class="fa fa-minus"></i>
-                            </a>
+                            <form action="/friend?next=/friends" method="post" style="display:inline-block">
+                                <input type="hidden" name="_method" value="DELETE" />
+                                <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+                                <input type="hidden" name="friend_id" value="{{friend.id}}"/>
+                                <button class="btn btn-xs btn-danger" type="submit" formaction="/friend?next=/friends">
+                                    <i class="fa fa-minus"></i>
+                                </button>
+                            </form>
                         </span>
                     </div>
                 </div>
@@ -49,5 +63,6 @@
 {% endblock %}
 {% block scripts %}
 {{super()}}
+<script type="text/javascript">CSRF_TOKEN='{{csrf_token()}}'</script>
 <script type="text/javascript" src="static/js/friend.js"></script>
 {% endblock %}

@@ -12,19 +12,21 @@
             </div>
         </div>
         <div class="col-xs-12 col-sm-9 col-md-10">
-            <div class="panel panel-default panel-max" style="height: 100">
+            <div class="panel panel-default panel-max">
                 <div class="panel-heading">
                     <h3 class="panel-title">Lock</h3>
                 </div>
                 <div class="panel-body">
                     <div class="row">
-                        <div class="container">
-                            <span class="label label-as-badge label-info label-user-info">Name</span>
-                            {{lock_info['id']}}
+                        <div class="col-xs-12">
+                            <span class="label label-as-badge label-info label-user-info">ID</span>
+                            <span>{{lock_info['id']}}</span>
                         </div>
-                        <div class="container">
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
                             <span class="label label-as-badge label-info label-user-info">Name</span>
-                            {{lock_info['name']}}
+                            <span>{{lock_info['name']}}</span>
                         </div>
                     </div>
                 </div>
@@ -61,9 +63,9 @@
                 <div class="row hover-darken top-buffer">
                     <div class="col-xs-12">
                         <span class="label label-as-badge label-{{ 'success' if lock_info.owner_id == user.id else 'info' }} label-user-info">{{ 'Owner' if lock_info.owner_id == user.id else 'Friend' }}</span>
-                        {{user.name}}
+                        <span>{{user.name}}</span>
                         <span class="pull-right">
-                            <a class="btn btn-primary btn-xs" href="profile/{{user.id}}">
+                            <a class="btn btn-primary btn-xs" href="/profile/{{user.id}}">
                                 <i class="fa fa-user"></i>
                             </a>
                             {% if ((not user.is_self) and lock_info.owner_id==session['user'].id) %}
