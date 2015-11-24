@@ -67,20 +67,23 @@ function check_lock_status(lock_id) {
 
 function update_lock_state(lock_id) {
     var state = check_lock_status(lock_id);
+    console.log("Checking...");
     switch(state) {
-    case LOCK_STATES.LOCKED:
-        set_lock_state(lock_id, LOCK_STATES.LOCKED);
-        break;
-    case LOCK_STATES.UNLOCKED:
-        set_lock_state(lock_id, LOCK_STATES.UNLOCKED);
-        break;
-    case LOCK_STATES.PENDING:
-        setTimeout(function() { update_lock_state(lock_id) }, 1000);
-        set_lock_state(lock_id, LOCK_STATES.PENDING);
-        break;
-    default:
-        throw RangeError("lock state "+state+" not recognised.");
-        break;
+        case LOCK_STATES.LOCKED:
+            setTimeout(function() { update_lock_state(lock_id) }, 3000);
+            set_lock_state(lock_id, LOCK_STATES.LOCKED);
+            break;
+        case LOCK_STATES.UNLOCKED:
+            setTimeout(function() { update_lock_state(lock_id) }, 3000);
+            set_lock_state(lock_id, LOCK_STATES.UNLOCKED);
+            break;
+        case LOCK_STATES.PENDING:
+            setTimeout(function() { update_lock_state(lock_id) }, 1000);
+            set_lock_state(lock_id, LOCK_STATES.PENDING);
+            break;
+        default:
+            throw RangeError("lock state "+state+" not recognised.");
+            break;
     }
 }
 
