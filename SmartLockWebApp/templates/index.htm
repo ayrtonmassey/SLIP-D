@@ -3,9 +3,9 @@
 <div id="jumbo" class="jumbotron">
     <div class="container text-center">
         <h1>{{ app_name }}</h1>
-        <p>Insert catchy slogan here.</p>
+        <p><img src="/static/img/SmartLockLogo.png" alt="SmartLock" width="200" height="200"/></p>
         {% if session.username and session.password  %}
-        <p><a class="btn btn-primary btn-lg" href="/profile" role="button">Get Started</a></p>
+        <p><a class="btn btn-primary btn-lg" href="/locks" role="button">Get Started</a></p>
         {% else %}
         <p><a class="btn btn-primary btn-lg" href="/register" role="button">Get Started</a></p>
         {% endif %}
