@@ -68,13 +68,13 @@
                             <a class="btn btn-primary btn-xs" href="/profile/{{user.id}}">
                                 <i class="fa fa-user"></i>
                             </a>
-                            {% if ((not user.is_self) and lock_info.owner_id==session['user'].id) %}
+                            {% if ((not (user['email'] == session['username'])) and lock_info.owner_id==session['user'].id) %}
                             <form action="/friend_lock?next=/locks/{{lock_info.id}}" method="post" style="display:inline-block">
-                                <input type="hidden" name="_method" value="{{'DELETE' if user.has_access else 'POST'}}" />
+                                <input type="hidden" name="_method" value="DELETE" />
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                                 <input type="hidden" name="friend_id" value="{{user.id}}"/>
                                 <input type="hidden" name="lock_id" value="{{lock_info.id}}" />
-                                <button class="btn btn-xs btn-{{'danger' if user.has_access else 'success'}}" type="submit" formaction="/friend_lock?next=/locks/{{lock_info.id}}"><i class="fa fa-{{'minus' if user.has_access else 'plus'}}"></i></button>
+                                <button class="btn btn-xs btn-danger" type="submit" formaction="/friend_lock?next=/locks/{{lock_info.id}}"><i class="fa fa-minus"></i></button>
                             </form>
                             {% endif %}
                         </span>

@@ -140,6 +140,7 @@ def login_prohibited(function):
 # ======== Endpoints ========== #
 #################################
 
+
 @app.route('/friend_search_data')
 @login_required
 def friend_search_data():
@@ -266,14 +267,6 @@ def status(lock_id):
     return (response.text, response.status_code, response.headers.items())
 
 
-@app.route('/friendpoint/<id>', methods=['GET'])
-@login_required
-def friendpoint(id):
-    response = requests.get(api_endpoint('user/{}'.format(id)),
-                             headers=session_auth_headers())
-    return json.dumps(json.loads(response.text),indent=4,separators=[',','\t: '],sort_keys=True), response.status_code, {'content-type': 'application/json'}
-
-
 #################################
 # =========== Views =========== #
 #################################
@@ -300,10 +293,18 @@ def profile():
 @app.route('/profile/<user_id>')
 @login_required
 def user_profile(user_id):
+    # Redirect to /profile if we're looking at the logged in user
+    if (int(user_id) == session['user']['id']):
+        return redirect(url_for('profile'))
+
+    # Else collect user data:
     u_response = requests.get(api_endpoint('user/{}'.format(user_id)),
                             headers=session_auth_headers())
     user_info = u_response.text
+
+    # If the user exists,
     if u_response.status_code == 200:
+        # Render their profile.
         user_info = json.loads(user_info)
         return render_template('user_profile.htm', app_name=APP_NAME, page='{} {}'.format(user_info['first_name'],user_info['last_name']), user_info=user_info)
     else:
@@ -367,10 +368,8 @@ def lock(lock_id):
     l_response = requests.get(api_endpoint('lock/{}'.format(lock_id)),
                               headers=session_auth_headers())
     client = app.test_client()
-    u_response = client.get('/friend_search_data?lock_id={}&has_access=true'.format(lock_id), headers=list(request.headers))
     lock_info = json.loads(l_response.text)
-    user_info = json.loads(u_response.data)
-    user_info = sorted(user_info, key=lambda k: {True: '', False: k['name']}[lock_info['owner_id']==k['id']])
+    user_info = sorted(lock_info['friends'], key=lambda k: {True: '', False: k['name']}[lock_info['owner_id']==k['id']])
     return render_template('lock.htm', app_name=APP_NAME, page='Lock: {}'.format(lock_info['name']), user_info=user_info, lock_info=lock_info)
 
 

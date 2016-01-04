@@ -44,25 +44,22 @@
             </div>
         </div>
     </div>
-    {% if my_lock_info %}
+    {% if user_info['my_locks'] %}
     <div class="panel panel-default">
         <div class="panel-heading">
             <div class="row">
-                <div class="col-xs-9">
-                    <h3 class="panel-title" style="line-height: 20px"></h3>
-                </div>
-                <div class="col-xs-3">
-                    <a href="/profile/register-lock" class="btn btn-xs btn-primary pull-right">Register</a>
+                <div class="col-xs-12">
+                    <h3 class="panel-title" style="line-height: 20px">My SmartLocks</h3>
                 </div>
             </div>
         </div>
         <div class="panel-body">
-            {% for lock in my_lock_info %}
+            {% for lock in user_info['my_locks'] %}
             <div class="row">
                 <div class="container">
                     <p>
                         <button name="lock-{{lock.id}}" class="btn btn-lock btn-default">?</button>
-                        <span style="padding-left:10px">{{lock.name}} ({{lock.id}})</span>
+                        <a href="/locks/{{lock.id}}" style="padding-left:10px"><span style="padding-left:10px">{{lock.name}} ({{lock.id}})</span></a>
                     </p>
                 </div>
             </div>
@@ -70,25 +67,22 @@
         </div>
     </div>
     {% endif %}
-    {% if friend_lock_info %}
+    {% if user_info['their_locks'] %}
     <div class="panel panel-default">
         <div class="panel-heading">
             <div class="row">
-                <div class="col-xs-9">
-                    <h3 class="panel-title" style="line-height: 20px"></h3>
-                </div>
-                <div class="col-xs-3">
-                    <a href="/profile/register-lock" class="btn btn-xs btn-primary pull-right">Register</a>
+                <div class="col-xs-12">
+                    <h3 class="panel-title" style="line-height: 20px">Their SmartLocks</h3>
                 </div>
             </div>
         </div>
         <div class="panel-body">
-            {% for lock in friend_lock_info %}
+            {% for lock in user_info['their_locks'] %}
             <div class="row">
                 <div class="container">
                     <p>
                         <button name="lock-{{lock.id}}" class="btn btn-lock btn-default">?</button>
-                        <span style="padding-left:10px">{{lock.name}} ({{lock.id}})</span>
+                        <a href="/locks/{{lock.id}}" style="padding-left:10px"><span style="padding-left:10px">{{lock.name}} ({{lock.id}})</span></a>
                     </p>
                 </div>
             </div>
@@ -100,4 +94,18 @@
 {% endblock %}
 {% block scripts %}
 {{super()}}
+<script type="text/javascript" src="/static/js/lock.js"></script>
+<script type="text/javascript" src="/static/js/lock.js"></script> 
+<script type="text/javascript"> 
+ {% if user_info['my_locks'] %}
+ {% for lock in user_info['my_locks'] %}
+ update_lock_state({{lock.id}});
+ {% endfor %}
+ {% endif %}
+ {% if user_info['their_locks'] %}
+ {% for lock in user_info['their_locks'] %}
+ update_lock_state({{lock.id}});
+ {% endfor %}
+ {% endif %}
+</script>
 {% endblock %}
